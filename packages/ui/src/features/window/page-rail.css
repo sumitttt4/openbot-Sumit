@@ -89,6 +89,18 @@
   color: var(--openbot-accent-text);
 }
 
+/* Talk: the voice assistant, in the signature colour, so it stands apart from the pages. */
+.window-rail-button.window-rail-talk,
+.window-rail-button.window-rail-talk:hover:not(:disabled):not([data-disabled]) {
+  background: var(--openbot-accent);
+  color: var(--openbot-text-on-accent);
+  box-shadow: var(--openbot-shadow-primary);
+}
+
+.window-rail-button.window-rail-talk:hover:not(:disabled):not([data-disabled]) {
+  background: var(--openbot-accent-hover);
+}
+
 .window-rail-button:focus-visible {
   outline: 0;
   box-shadow: var(--openbot-focus-ring);

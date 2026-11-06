@@ -7,6 +7,7 @@ import { appPort } from "../../app-port";
 import { useLayout } from "../../layout";
 import { usePlatform } from "../../platform";
 import { useChannels } from "../channels/channels-context";
+import { requestTalk } from "../conversation/talk-request";
 import { useCustomAgents } from "../custom-agents/custom-agents-context";
 import { serverSupportsCapability } from "../servers/server-capabilities";
 import { useServers } from "../servers/servers-context";
@@ -72,6 +73,11 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
       usageRows={usageRows()}
       customAgentUsage={localAgentUsage()}
       onAgents={() => showSidebarView("agents")}
+      // Talk: the open agent chat starts its voice conversation. In live voice, new work makes its own agent.
+      onTalk={() => {
+        showSidebarView("agents");
+        requestTalk();
+      }}
       onRoutines={() => showSidebarView("routines")}
       // A joined server without workflows shows its notice on the page.
       onWorkflows={() => windowPage.openWorkflows(null)}

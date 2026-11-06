@@ -48,6 +48,7 @@ import { stopSpokenReply } from "../speech/speech-replies";
 import { copyComposerSelection, readComposerCopy } from "./composer-clipboard";
 import { useConversationViewScope } from "./conversation-scope";
 import { currentConversationTarget } from "./stores/composer-store";
+import { takeTalkRequest, talkRequested } from "./talk-request";
 
 // Module scope: the composer remounts on navigation, and a dismissed notice must stay dismissed.
 const [dismissedCompactions, setDismissedCompactions] = createSignal<Record<string, string>>({});
@@ -306,6 +307,13 @@ export function ConversationComposer() {
       ? spent
       : null;
   };
+  // The Talk button of the rail opens the voice conversation of the open agent chat.
+  createEffect(
+    () => talkRequested() && !channel && voiceConversationAvailable(),
+    (ready) => {
+      if (ready && takeTalkRequest()) openSidePanelPane("voice");
+    },
+  );
   // Retain dismissal across navigation and identical readings. A recovered window can warn again,
   // including providers that report no reset time. A pending usage load is not recovery.
   createEffect(

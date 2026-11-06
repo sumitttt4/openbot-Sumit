@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   Ellipsis,
   ListChecks,
+  Mic,
   MotionTooltip,
   Pin,
   Settings,
@@ -201,6 +202,8 @@ export interface PageRailProps {
   /** The answers of the custom agents on this computer that have a usage prompt. Absent on the web. */
   customAgentUsage?: readonly CustomAgentUsageRailRow[] | undefined;
   onAgents: () => void;
+  /** Opens a voice conversation with the open agent. Absent, the rail has no Talk button. */
+  onTalk?: (() => void) | undefined;
   /** Absent when the server has no routines. */
   onRoutines?: (() => void) | undefined;
   /** Absent when the server has no workflows. */
@@ -385,6 +388,13 @@ export function PageRail(props: PageRailProps) {
         <RailButton label={t("app.rail.agents")} current={props.current === "agents"} onClick={props.onAgents}>
           <Bot aria-hidden="true" />
         </RailButton>
+        <Show when={props.onTalk}>
+          {(onTalk) => (
+            <RailButton label={t("app.rail.talk")} current={false} onClick={() => onTalk()()} class="window-rail-talk">
+              <Mic aria-hidden="true" />
+            </RailButton>
+          )}
+        </Show>
         <For each={pages().filter((page) => props.pinned.includes(page.id))} keyed={(page) => page.id}>
           {(page) => (
             <RailButton label={page().label} current={props.current === page().id} onClick={page().open}>
