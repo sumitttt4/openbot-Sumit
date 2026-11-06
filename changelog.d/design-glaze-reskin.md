@@ -7,3 +7,4 @@
 - The sidebar is cleaner: bolder agent names, no role chip beside each name, and a taller search field. The open page in the side rail and in settings is marked in cobalt.
 - Settings sections are white cards with a thin border (dark cards in the dark theme) instead of grey blocks.
 - New icons throughout the app, from the Hugeicons set that Glaze uses, with a lighter line.
+- Icons move, as in the Glaze animated icons: an icon plays a short animation when you point at its button and when its page opens. The animation is off when the system asks for reduced motion.

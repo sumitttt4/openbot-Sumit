@@ -1,0 +1,411 @@
+/*
+ * The Glaze animated icons (glazeui.xyz), on the Hugeicons of `hugeicon.tsx`. An icon with a motion
+ * marks the moving parts with `data-icon-motion`. Each motion sets `--icon-motion`, and the rules at
+ * the end play it:
+ *   - when the control around the icon is hovered or focused, and
+ *   - once, when that control becomes the open page (`aria-current="page"`) or the selected item
+ *     (`data-selected`), because an animation starts when its rule starts to apply.
+ * A person who asks for reduced motion sees no movement.
+ */
+
+.hugeicon[data-animated-icon] {
+  overflow: visible;
+}
+
+.hugeicon[data-animated-icon] [data-icon-motion] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-icon-motion="swing"] {
+  --icon-motion: hugeicon-swing 0.9s ease-in-out;
+  transform-origin: 50% 0;
+}
+[data-icon-motion="beat"] {
+  --icon-motion: hugeicon-beat 0.9s ease-in-out;
+}
+[data-icon-motion="pop"] {
+  --icon-motion: hugeicon-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+[data-icon-motion="scan"] {
+  --icon-motion: hugeicon-scan 1.1s ease-in-out;
+}
+[data-icon-motion="spin"] {
+  --icon-motion: hugeicon-spin 1.4s cubic-bezier(0.5, 0, 0.5, 1);
+}
+[data-icon-motion="spin-once"] {
+  --icon-motion: hugeicon-spin 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-icon-motion="fly"] {
+  --icon-motion: hugeicon-fly 0.9s ease-in-out;
+}
+[data-icon-motion="drop"] {
+  --icon-motion: hugeicon-drop 0.8s ease-in-out;
+}
+[data-icon-motion="rise"] {
+  --icon-motion: hugeicon-rise 0.8s ease-in-out;
+}
+[data-icon-motion="lift"] {
+  --icon-motion: hugeicon-lift 0.8s ease-in-out;
+  transform-origin: 0% 100%;
+}
+[data-icon-motion="twinkle"] {
+  --icon-motion: hugeicon-twinkle 1s ease-in-out;
+}
+[data-icon-motion="twinkle-late"] {
+  --icon-motion: hugeicon-twinkle 1s 0.2s ease-in-out;
+}
+[data-icon-motion="blink"] {
+  --icon-motion: hugeicon-blink 0.9s ease-in-out;
+}
+[data-icon-motion="nudge"] {
+  --icon-motion: hugeicon-nudge 0.7s ease-in-out;
+}
+[data-icon-motion="nudge-back"] {
+  --icon-motion: hugeicon-nudge-back 0.7s ease-in-out;
+}
+[data-icon-motion="wave"] {
+  --icon-motion: hugeicon-wave 0.9s ease-in-out;
+}
+[data-icon-motion="wave-late"] {
+  --icon-motion: hugeicon-wave 0.9s 0.15s ease-in-out;
+}
+[data-icon-motion="shackle"] {
+  --icon-motion: hugeicon-shackle 0.9s ease-in-out;
+}
+[data-icon-motion="quarter"] {
+  --icon-motion: hugeicon-quarter 0.45s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+[data-icon-motion="wiggle"] {
+  --icon-motion: hugeicon-wiggle 0.7s ease-in-out;
+}
+[data-icon-motion="float"] {
+  --icon-motion: hugeicon-float 1.2s ease-in-out;
+}
+[data-icon-motion="shake"] {
+  --icon-motion: hugeicon-shake 0.5s ease-in-out;
+}
+[data-icon-motion="launch"] {
+  --icon-motion: hugeicon-launch 1.1s ease-in-out;
+}
+[data-icon-motion="tilt"] {
+  --icon-motion: hugeicon-tilt 0.7s cubic-bezier(0.3, 1.4, 0.5, 1);
+  transform-origin: 20% 90%;
+}
+[data-icon-motion="flash"] {
+  --icon-motion: hugeicon-flash 0.8s ease-in-out;
+}
+[data-icon-motion="grow"] {
+  --icon-motion: hugeicon-grow 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: 50% 100%;
+}
+
+.hugeicon[data-animated-icon]:hover [data-icon-motion],
+:is(button, a, label, summary, [role="button"], [role="menuitem"], [role="tab"], [role="option"]):is(
+    :hover,
+    :focus-visible,
+    [aria-current="page"],
+    [data-selected]
+  )
+  .hugeicon[data-animated-icon]
+  [data-icon-motion] {
+  animation: var(--icon-motion);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hugeicon[data-animated-icon] [data-icon-motion] {
+    animation: none;
+  }
+}
+
+@keyframes hugeicon-swing {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(14deg);
+  }
+  40% {
+    transform: rotate(-11deg);
+  }
+  60% {
+    transform: rotate(6deg);
+  }
+  80% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes hugeicon-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.2);
+  }
+  30% {
+    transform: scale(0.95);
+  }
+  45% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes hugeicon-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.82);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes hugeicon-scan {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-1.5px, -1px);
+  }
+  50% {
+    transform: translate(1px, -1.5px);
+  }
+  75% {
+    transform: translate(1.5px, 1px);
+  }
+}
+
+@keyframes hugeicon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hugeicon-fly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(6px, -6px);
+    opacity: 0;
+  }
+  46% {
+    transform: translate(-6px, 6px);
+    opacity: 0;
+  }
+  75% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes hugeicon-drop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes hugeicon-rise {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes hugeicon-lift {
+  0%,
+  100% {
+    transform: rotate(0) translateY(0);
+  }
+  35%,
+  65% {
+    transform: rotate(-16deg) translateY(-1.5px);
+  }
+}
+
+@keyframes hugeicon-twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0);
+  }
+  50% {
+    transform: scale(0.7) rotate(25deg);
+  }
+}
+
+@keyframes hugeicon-blink {
+  0%,
+  35%,
+  65%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes hugeicon-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3.5px);
+  }
+}
+
+@keyframes hugeicon-nudge-back {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3.5px);
+  }
+}
+
+@keyframes hugeicon-wave {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes hugeicon-shackle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35%,
+  65% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes hugeicon-quarter {
+  to {
+    transform: rotate(90deg);
+  }
+}
+
+@keyframes hugeicon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-12deg);
+  }
+  40% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes hugeicon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes hugeicon-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-2px);
+  }
+  40%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes hugeicon-launch {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-1px, 1px);
+  }
+  45% {
+    transform: translate(7px, -7px);
+    opacity: 0;
+  }
+  46% {
+    transform: translate(-5px, 5px);
+    opacity: 0;
+  }
+  75% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes hugeicon-tilt {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  40% {
+    transform: rotate(-14deg) scale(1.08);
+  }
+}
+
+@keyframes hugeicon-flash {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 0.25;
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes hugeicon-grow {
+  0% {
+    transform: scaleY(1);
+  }
+  30% {
+    transform: scaleY(0.25);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}

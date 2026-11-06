@@ -25,6 +25,47 @@ export interface IconProps extends Partial<JSX.SvgSVGAttributes<SVGSVGElement>> 
 
 export type Icon = (props: IconProps) => JSX.Element;
 
+/**
+ * The movements of the Glaze animated icons (styles/animated-icons.css). An icon plays its movement
+ * when the button, link or menu item around it is hovered or focused, and once when that control
+ * becomes the open page or the selected item.
+ */
+export type IconMotion =
+  | "swing"
+  | "beat"
+  | "pop"
+  | "scan"
+  | "spin"
+  | "spin-once"
+  | "fly"
+  | "drop"
+  | "rise"
+  | "lift"
+  | "twinkle"
+  | "twinkle-late"
+  | "blink"
+  | "nudge"
+  | "nudge-back"
+  | "wave"
+  | "wave-late"
+  | "shackle"
+  | "quarter"
+  | "wiggle"
+  | "float"
+  | "shake"
+  | "launch"
+  | "tilt"
+  | "flash"
+  | "grow";
+
+/** `whole` moves the whole drawing; `parts` moves single elements by their index in the icon data. */
+export interface IconMotionConfig {
+  whole?: IconMotion;
+  parts?: Partial<Record<number, IconMotion>>;
+  /** A delay in milliseconds for a part, so that parts move one after another. */
+  delays?: Partial<Record<number, number>>;
+}
+
 /** Hugeicons are drawn for a 1.5 line on a 24 grid; Lucide's 2 makes them heavy. */
 const DEFAULT_STROKE_WIDTH = 1.5;
 const DEFAULT_SIZE = 24;
@@ -51,8 +92,15 @@ function hasAccessibleName(props: IconProps): boolean {
   return false;
 }
 
-export function hugeicon(lucideName: string, node: HugeiconNode): Icon {
-  const paths = node.map(([tag, attributes]) => [tag, pathAttributes(attributes)] as const);
+export function hugeicon(lucideName: string, node: HugeiconNode, motion?: IconMotionConfig): Icon {
+  const paths = node.map(([tag, attributes], index) => {
+    const part = motion?.parts?.[index];
+    const delay = motion?.delays?.[index];
+    const props: Record<string, string | number> = pathAttributes(attributes);
+    if (part) props["data-icon-motion"] = part;
+    if (delay) props.style = `animation-delay: ${delay}ms`;
+    return [tag, props] as const;
+  });
   return (props) => {
     const rest = omit(props, "size", "color", "strokeWidth", "absoluteStrokeWidth", "class", "children");
     const size = () => props.size ?? DEFAULT_SIZE;
@@ -71,8 +119,10 @@ export function hugeicon(lucideName: string, node: HugeiconNode): Icon {
       stroke: props.color ?? "currentColor",
       "stroke-width": strokeWidth(),
       class: ["lucide", "lucide-icon", `lucide-${lucideName}`, "hugeicon", props.class].filter(Boolean).join(" "),
+      "data-animated-icon": motion ? "" : undefined,
     });
-    const drawing = () => <For each={paths}>{([tag, pathProps]) => <Dynamic component={tag} {...pathProps} />}</For>;
+    const parts = () => <For each={paths}>{([tag, pathProps]) => <Dynamic component={tag} {...pathProps} />}</For>;
+    const drawing = () => (motion?.whole ? <g data-icon-motion={motion.whole}>{parts()}</g> : parts());
     // A decorative icon is hidden from screen readers. One with a name, as Lucide does, is not.
     return (
       <Show

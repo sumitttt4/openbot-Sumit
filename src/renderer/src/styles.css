@@ -5,6 +5,7 @@
 @import "@openbot/brand/tokens-light.css";
 @import "@openbot/brand/logo.css";
 @import "@openbot/ui/styles.css";
+@import "@openbot/ui/styles/animated-icons.css";
 @import "@openbot/ui/features/account/otp-input.css";
 @import "./styles/transitions.css";
 @import "@openbot/ui/styles/sliding-tabs.css";
