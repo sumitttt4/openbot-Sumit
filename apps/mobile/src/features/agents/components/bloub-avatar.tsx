@@ -1,5 +1,6 @@
 import { avatarHeadColor, avatarStyleForSeed } from "@openbot/brand/bloub-avatar";
 import { type AvatarMood, avatarMoodIsBusy, avatarMoodPresentation } from "@openbot/brand/bloub-avatar-motion";
+import { AGENT_AVATAR_LOOK } from "@openbot/brand/mascot-avatar";
 import type { AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
 import { Canvas, createPicture, Picture } from "@shopify/react-native-skia";
 import { Image } from "expo-image";
@@ -41,6 +42,7 @@ import { showsOnline } from "@/features/workspace/model/server-status";
 import { useMotionPreference } from "@/shared/lib/motion";
 import { useScreenFocusedWhile } from "@/shared/lib/use-screen-focused-while";
 import { AgentPhoto, type AgentPhotoProps } from "./agent-photo";
+import { MascotAvatar } from "./mascot-avatar";
 
 interface BloubAvatarProps extends AgentPhotoProps {
   agentId: string;
@@ -124,16 +126,27 @@ export const BloubAvatarPreview = memo(function BloubAvatarPreview(
       size={size}
       rings={props.rings ? !props.disconnected && avatarMoodPresentation(props.mood ?? "idle").rings : undefined}
     >
-      <PlushAvatar
-        seed={props.seed}
-        hue={props.hue}
-        color={props.color ?? null}
-        size={size}
-        mood={props.mood}
-        animateIdle={props.animateIdle}
-        disconnected={props.disconnected}
-        transition={props.transition}
-      />
+      {AGENT_AVATAR_LOOK === "mascot" ? (
+        <MascotAvatar
+          seed={props.seed}
+          hue={props.hue}
+          color={props.color ?? null}
+          size={size}
+          mood={props.mood}
+          disconnected={props.disconnected}
+        />
+      ) : (
+        <PlushAvatar
+          seed={props.seed}
+          hue={props.hue}
+          color={props.color ?? null}
+          size={size}
+          mood={props.mood}
+          animateIdle={props.animateIdle}
+          disconnected={props.disconnected}
+          transition={props.transition}
+        />
+      )}
     </AgentPhoto>
   );
 });
