@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./format": "./src/format.ts",
+    "./app-name": "./src/app-name.ts",
     "./languages": "./src/languages.ts",
     "./mobile": "./src/mobile.ts",
     "./source": "./src/source-text.ts"

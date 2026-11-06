@@ -4,6 +4,7 @@ import { createTranslate, type MessageParams, type Translate } from "./message";
 import { type AppMessages, en } from "./messages/en/index";
 
 export { APP_LANGUAGES, type AppLanguage, DEFAULT_APP_LANGUAGE } from "@openbot/contracts/app-language";
+export { APP_NAME, CATALOG_APP_NAME, withAppName } from "./app-name";
 export { type AppFormat, createFormat } from "./format";
 export {
   formatLocale,

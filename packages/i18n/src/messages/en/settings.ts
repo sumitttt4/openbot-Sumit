@@ -20,7 +20,7 @@ export const messages = defineMessages("settings", {
   "settings.logoColor.title": "Logo color",
   "settings.logoColor.description": "Shown in the Dock, the taskbar and the Dynamic Island.",
   "settings.logoColor.buildNote": "This build keeps its own logo color. The choice applies to the release app.",
-  "settings.logoColor.lavender": "Lavender",
+  "settings.logoColor.lavender": "Cobalt",
   "settings.logoColor.green": "Green",
   "settings.logoColor.gold": "Gold",
   "settings.logoColor.terracotta": "Terracotta",

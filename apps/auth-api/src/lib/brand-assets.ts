@@ -4,7 +4,13 @@
 // The shapes come from `@openbot/brand`, and the layout of the logo with its name from the Figma
 // "Logo" board. No JSX and no DOM here: the Worker imports this module.
 
-import { APP_LOGO_CORNER, APP_LOGO_EYE_POINTS, APP_LOGO_SIZE } from "@openbot/brand/app-logo-shape";
+import {
+  APP_LOGO_CORNER,
+  APP_LOGO_EYE_POINTS,
+  APP_LOGO_HEAD_PATH,
+  APP_LOGO_NOSE_PATH,
+  APP_LOGO_SIZE,
+} from "@openbot/brand/app-logo-shape";
 import { WORDMARK_PATHS, WORDMARK_WIDTH } from "@openbot/brand/wordmark-shape";
 import { BRAND_ROUTE } from "./brand-page";
 
@@ -17,7 +23,6 @@ export type BrandSpace = "tight" | "safe";
 
 // The colors of the brand tokens in `@openbot/brand/tokens.css`. A file must not depend on a page's CSS.
 const FILL: Record<IconColor, string> = { lilac: "#d6adf2", white: "#ffffff", black: "#040007" };
-const EYE: Record<IconColor, string> = { lilac: "#040007", white: "#040007", black: "#ffffff" };
 const INK: Record<Ink, string> = { dark: "#040007", light: "#ffffff" };
 const COLOR_NAME: Record<IconColor, string> = { lilac: "Lilac", white: "White", black: "Black" };
 
@@ -43,7 +48,9 @@ function mark(color: IconColor, shape: IconShape, x: number, y: number): string 
   return [
     `<g transform="translate(${x} ${y})">`,
     `<rect width="${APP_LOGO_SIZE}" height="${APP_LOGO_SIZE}" rx="${corner}" fill="${FILL[color]}"/>`,
-    `<g fill="none" stroke="${EYE[color]}" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round">`,
+    `<path d="${APP_LOGO_HEAD_PATH}" fill="#ffffff"/>`,
+    `<path d="${APP_LOGO_NOSE_PATH}" fill="${FILL[color]}" stroke="${FILL[color]}" stroke-width="5" stroke-linejoin="round"/>`,
+    `<g fill="none" stroke="${FILL[color]}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">`,
     `<polyline points="${APP_LOGO_EYE_POINTS.left}"/><polyline points="${APP_LOGO_EYE_POINTS.right}"/>`,
     "</g></g>",
   ].join("");

@@ -1,6 +1,6 @@
 import { Pressable, View } from "react-native";
 import Animated from "react-native-reanimated";
-import Svg, { Polyline, Rect } from "react-native-svg";
+import Svg, { Path, Polyline, Rect } from "react-native-svg";
 import { useCSSVariable } from "uniwind";
 
 import { type AppLogoAnimation, useAppLogoMotion } from "@/features/auth/components/use-app-logo-motion";
@@ -13,13 +13,15 @@ export interface AppLogoProps {
 }
 
 const VIEWBOX_SIZE = 240;
-const LEFT_EYE_CENTER_X = 68.88;
-const RIGHT_EYE_CENTER_X = 170.88;
-const EYE_CENTER_Y = 117;
-const LEFT_EYE_POINTS =
-  "43.55 93.61 64.69 81.41 36.48 108.04 79.67 83.11 35.93 122.88 91.58 90.74 38.9 132.69 97.66 98.76 42.44 138.88 100.43 105.4 46.9 143.83 101.97 112.04 55.08 149.51 101.83 122.52 73.01 152.43 94.14 140.23";
-const RIGHT_EYE_POINTS =
-  "145.65 93.61 166.79 81.41 140.83 101.52 175.58 81.46 138.3 109.53 183.18 83.63 137.55 117.43 189.67 87.33 139.67 129.39 197.88 95.78 142.92 136.32 201.52 102.48 149.03 143.86 204.07 112.08 159.14 150.37 203.51 124.75 169.28 152.61 199.82 134.98";
+// The cat face of the desktop logo (packages/brand/src/app-logo-shape.ts).
+const LEFT_EYE_CENTER_X = 96;
+const RIGHT_EYE_CENTER_X = 144;
+const EYE_CENTER_Y = 126;
+const LEFT_EYE_POINTS = "96 116 96 136";
+const RIGHT_EYE_POINTS = "144 116 144 136";
+const HEAD_PATH =
+  "M50 118 C49 96 52 70 58 48 C60 41 66 39 72 43 L100 64 C113 60 127 60 140 64 L168 43 C174 39 180 41 182 48 C188 70 191 96 190 118 C190 160 159 190 120 190 C81 190 50 160 50 118 Z";
+const NOSE_PATH = "M113 152 L127 152 L120 160 Z";
 
 function resolveColor(value: string | number | undefined, fallback: string): string {
   return String(value ?? fallback);
@@ -27,8 +29,10 @@ function resolveColor(value: string | number | undefined, fallback: string): str
 
 export function AppLogo({ animation = "none", interactive = false, size = VIEWBOX_SIZE }: AppLogoProps) {
   const { t } = useText();
-  const backgroundColor = resolveColor(useCSSVariable("--openbot-logo-production"), "#d6adf2");
-  const eyeColor = resolveColor(useCSSVariable("--openbot-logo-eye"), "#040007");
+  const backgroundColor = resolveColor(useCSSVariable("--openbot-logo-production"), "#2445e6");
+  // The eyes and nose take the colour of the square, on the white face.
+  const eyeColor = backgroundColor;
+  const faceColor = "#ffffff";
   const { handlePressIn, leftEyeAnimatedStyle, rightEyeAnimatedStyle } = useAppLogoMotion({ animation, size });
   const eyeLayerStyle = {
     height: size,
@@ -46,6 +50,8 @@ export function AppLogo({ animation = "none", interactive = false, size = VIEWBO
     >
       <Svg width={size} height={size} viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}>
         <Rect width={VIEWBOX_SIZE} height={VIEWBOX_SIZE} rx={50} ry={50} fill={backgroundColor} />
+        <Path d={HEAD_PATH} fill={faceColor} />
+        <Path d={NOSE_PATH} fill={eyeColor} stroke={eyeColor} strokeWidth={5} strokeLinejoin="round" />
       </Svg>
 
       <Animated.View
@@ -63,7 +69,7 @@ export function AppLogo({ animation = "none", interactive = false, size = VIEWBO
             stroke={eyeColor}
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={9.5}
+            strokeWidth={13}
           />
         </Svg>
       </Animated.View>
@@ -83,7 +89,7 @@ export function AppLogo({ animation = "none", interactive = false, size = VIEWBO
             stroke={eyeColor}
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={9.5}
+            strokeWidth={13}
           />
         </Svg>
       </Animated.View>

@@ -8,3 +8,4 @@
 - Settings sections are white cards with a thin border (dark cards in the dark theme) instead of grey blocks.
 - New icons throughout the app, from the Hugeicons set that Glaze uses, with a lighter line.
 - Icons move, as in the Glaze animated icons: an icon plays a short animation when you point at its button and when its page opens. The animation is off when the system asks for reduced motion.
+- The app is named Sumit, with a new cat logo and app icon on desktop and mobile. The name is one setting (`APP_NAME`), and a rename keeps the agents, chats and sign-in.

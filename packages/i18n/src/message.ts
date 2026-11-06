@@ -1,3 +1,4 @@
+import { withAppName } from "./app-name";
 import { pluralCategory } from "./plural";
 
 /**
@@ -122,7 +123,8 @@ export function createTranslate<Source extends MessageCatalog>(input: {
     const message = translated ?? input.source[key];
     if (message === undefined) return key;
     const locale = translated === undefined ? input.sourceLocale : input.locale;
-    const text = typeof message === "string" ? message : selectForm(message, countOf(values), locale);
+    // The app name goes in before the values, so a value such as an agent name keeps its own text.
+    const text = withAppName(typeof message === "string" ? message : selectForm(message, countOf(values), locale));
     return values ? interpolate(text, values) : text;
   };
 }

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "OpenBot",
+    "name": "Sumit",
     "slug": "openbot",
     "platforms": ["ios", "android"],
     "version": "1.4.7",
@@ -46,12 +46,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#CDADEC",
+          "backgroundColor": "#2445E6",
           "image": "./assets/splash/eyes.png",
           "imageWidth": 240,
           "resizeMode": "contain",
           "dark": {
-            "backgroundColor": "#756183",
+            "backgroundColor": "#000000",
             "image": "./assets/splash/eyes.png"
           },
           "android": {

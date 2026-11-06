@@ -1,3 +1,4 @@
+import { APP_NAME } from "@openbot/i18n";
 import { installPointerFocusGuard } from "@openbot/ui/pointer-focus";
 import { render } from "@solidjs/web";
 // Copying a selection with a formula in it gives its LaTeX source, not the typeset glyphs twice.
@@ -11,6 +12,9 @@ import { readChatWindowTarget } from "./features/window/chat-window";
 import { syncLogoColor } from "./logo-color";
 import { startRendererTiming } from "./renderer-timing";
 import "./styles.css";
+
+// The window takes the page title until a view names it; index.html says OpenBot.
+document.title = APP_NAME;
 
 const root = document.getElementById("root");
 

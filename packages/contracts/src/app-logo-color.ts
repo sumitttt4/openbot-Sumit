@@ -30,7 +30,8 @@ export const DEFAULT_APP_LOGO_COLOR: AppLogoColor = "lavender";
  * renderers set `--openbot-logo-production` to it, so the icon and the logos show the same color.
  */
 export const APP_LOGO_COLOR_HEX = {
-  lavender: "#d6adf2",
+  // The stored name of the default stays "lavender"; the colour is the Glaze cobalt of the cat logo.
+  lavender: "#4f6bff",
   green: "#7cc68a",
   gold: "#dcba70",
   terracotta: "#cb9071",
@@ -45,9 +46,10 @@ export const APP_LOGO_COLOR_HEX = {
 /** The released eye color, `--openbot-logo-eye`. */
 export const DEFAULT_APP_LOGO_EYE_HEX = "#040007";
 
-/** The eye color of each choice. Every choice has a light body, so each one keeps the released eyes. */
+/** The eye color of each choice, on the white cat face. */
 export const APP_LOGO_EYE_HEX = {
-  lavender: DEFAULT_APP_LOGO_EYE_HEX,
+  // The cobalt logo has a white face, and its eyes take the cobalt of the square.
+  lavender: "#4f6bff",
   green: DEFAULT_APP_LOGO_EYE_HEX,
   gold: DEFAULT_APP_LOGO_EYE_HEX,
   terracotta: DEFAULT_APP_LOGO_EYE_HEX,

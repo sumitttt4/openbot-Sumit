@@ -8,7 +8,7 @@ import {
   type HostStatus,
   IPC_ENDPOINTS,
 } from "@openbot/contracts/ipc";
-import { createFormat, localeDirection, resolveLocale, translateFor } from "@openbot/i18n";
+import { APP_NAME, CATALOG_APP_NAME, createFormat, localeDirection, resolveLocale, translateFor } from "@openbot/i18n";
 import { localizeSourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { createRemoteDirectoryRefresh } from "@openbot/team-client/remote-directory";
@@ -276,8 +276,12 @@ if (commandLineUserDataDirectory) {
       ),
     ),
   );
+} else {
+  // The data folder keeps the OpenBot name when the app shows another name (APP_NAME), so a renamed
+  // build opens the agents, chats and sign-in of the OpenBot install it replaces.
+  app.setPath("userData", join(app.getPath("appData"), CATALOG_APP_NAME));
 }
-app.setName("OpenBot");
+app.setName(APP_NAME);
 app.enableSandbox();
 if (process.platform === "win32") app.setAppUserModelId("app.openbot.desktop");
 // Linux: on Wayland, Chromium waits until a monitor is on before it starts. With none, start again on
@@ -964,7 +968,7 @@ function requestDesktopNotificationPermission(
       preference,
       showWelcome: () => {
         if (!Notification.isSupported()) return;
-        showRetainedNotification(new Notification({ title: "OpenBot", body: translate("notification.welcome") }));
+        showRetainedNotification(new Notification({ title: APP_NAME, body: translate("notification.welcome") }));
       },
     }),
   );

@@ -30,12 +30,26 @@
   fill: var(--app-logo-background);
 }
 
+/* The cat face: a light head on the coloured square, with the eyes and nose in the square's colour. */
+.app-logo-face {
+  fill: var(--openbot-logo-face);
+  pointer-events: none;
+}
+
+.app-logo-nose {
+  fill: var(--app-logo-eye);
+  stroke: var(--app-logo-eye);
+  stroke-linejoin: round;
+  stroke-width: 5px;
+  pointer-events: none;
+}
+
 .app-logo-eye {
   fill: none;
   stroke: var(--app-logo-eye);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 9.5px;
+  stroke-width: 13px;
   pointer-events: none;
   transform-box: view-box;
 }
@@ -49,11 +63,11 @@
 }
 
 .app-logo-eye-left {
-  transform-origin: 28.7% 48.7%;
+  transform-origin: 40% 52.5%;
 }
 
 .app-logo-eye-right {
-  transform-origin: 71.2% 48.8%;
+  transform-origin: 60% 52.5%;
 }
 
 /* `AppLogo` starts each blink. A loop over the whole period, with the eyes still for most of it, makes

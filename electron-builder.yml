@@ -1,5 +1,7 @@
 appId: app.openbot.desktop
-productName: OpenBot
+# The name of the installer, the program and its shortcuts. The text in the app takes its name from
+# APP_NAME in packages/i18n/src/app-name.ts; keep the two the same.
+productName: Sumit
 copyright: Copyright © 2026 Synthetify Labs spółka z ograniczoną odpowiedzialnością
 protocols:
   - name: OpenBot invitations
