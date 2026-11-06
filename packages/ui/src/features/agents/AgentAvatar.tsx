@@ -1,6 +1,7 @@
 import { BloubBot, type ExpressionId, POSES } from "@norbert_bodziony/bloub";
 import { PlushBot, type PlushState, type PlushTransition } from "@norbert_bodziony/bloub/plush";
 import { type AvatarMood, avatarMoodPresentation, type ShapeSafeStateId } from "@openbot/brand/bloub-avatar-motion";
+import { AGENT_AVATAR_LOOK } from "@openbot/brand/mascot-avatar";
 import type { AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
 import { prefersReducedMotion } from "@openbot/ui/utils";
 import { createEffect, createMemo, createSignal, onSettled, Show } from "solid-js";
@@ -14,6 +15,7 @@ import {
 import type { AgentProfile } from "../../data";
 import { documentFocused } from "../../document-focus";
 import { documentSoftwareRendering } from "../../document-rendering";
+import { MascotSvg } from "../../mascot-avatar";
 
 // Cap avatar animation at 30fps: uncapped bloub clocks measured 30% renderer / 24% GPU
 // for two visible avatars. The shape is 24-40px, so the eye cannot see the difference.
@@ -426,27 +428,41 @@ function GeneratedAvatar(props: {
       data-breathe={flatBreathe()}
       aria-hidden="true"
     >
-      <Show when={flat()} fallback={plushAvatar()}>
-        <Show
-          when={!reducedMotion()}
-          fallback={
-            <Show when={flatAppearance()} keyed>
-              {(frozen) => (
-                <BloubBot
-                  size={100}
-                  shape={frozen.shape}
-                  color={frozen.color}
-                  expression={frozen.expression}
-                  state={frozen.state}
-                  frozenAt={POSES[frozen.state]}
-                  ariaLabel=""
-                  class="bloub-avatar-svg"
-                />
-              )}
-            </Show>
-          }
-        >
-          {flatAvatar()}
+      {/* The cat and panda mascots draw the same profile, with the face that the mood, the hover
+          and the working cycle choose. AGENT_AVATAR_LOOK switches back to the Bloub characters. */}
+      <Show
+        when={AGENT_AVATAR_LOOK === "bloub"}
+        fallback={
+          <MascotSvg
+            shape={appearance().shape}
+            expression={appearance().expression}
+            color={appearance().color}
+            class="bloub-avatar-svg"
+          />
+        }
+      >
+        <Show when={flat()} fallback={plushAvatar()}>
+          <Show
+            when={!reducedMotion()}
+            fallback={
+              <Show when={flatAppearance()} keyed>
+                {(frozen) => (
+                  <BloubBot
+                    size={100}
+                    shape={frozen.shape}
+                    color={frozen.color}
+                    expression={frozen.expression}
+                    state={frozen.state}
+                    frozenAt={POSES[frozen.state]}
+                    ariaLabel=""
+                    class="bloub-avatar-svg"
+                  />
+                )}
+              </Show>
+            }
+          >
+            {flatAvatar()}
+          </Show>
         </Show>
       </Show>
     </span>

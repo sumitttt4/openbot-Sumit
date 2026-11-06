@@ -1,8 +1,10 @@
 import { BloubBot } from "@norbert_bodziony/bloub";
 import { bloubAvatarProfile } from "@openbot/brand/bloub-avatar";
+import { AGENT_AVATAR_LOOK } from "@openbot/brand/mascot-avatar";
 import type { AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
 import { render } from "@solidjs/web";
 import { flush } from "solid-js";
+import { MascotSvg } from "./mascot-avatar";
 
 /**
  * When an avatar animates, which is a performance decision and not a state one: `hover` and `idle`
@@ -66,16 +68,19 @@ function mountStaticAvatar(
 ): () => void {
   const profile = bloubAvatarProfile(seed, hue, color);
   const dispose = render(
-    () => (
-      <BloubBot
-        size={100}
-        shape={profile.shape}
-        color={profile.color}
-        expression={profile.expression}
-        frozenAt={0}
-        ariaLabel=""
-      />
-    ),
+    () =>
+      AGENT_AVATAR_LOOK === "mascot" ? (
+        <MascotSvg shape={profile.shape} expression={profile.expression} color={profile.color} />
+      ) : (
+        <BloubBot
+          size={100}
+          shape={profile.shape}
+          color={profile.color}
+          expression={profile.expression}
+          frozenAt={0}
+          ariaLabel=""
+        />
+      ),
     host,
   );
   flush();

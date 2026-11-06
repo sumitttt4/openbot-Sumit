@@ -9,3 +9,4 @@
 - New icons throughout the app, from the Hugeicons set that Glaze uses, with a lighter line.
 - Icons move, as in the Glaze animated icons: an icon plays a short animation when you point at its button and when its page opens. The animation is off when the system asks for reduced motion.
 - The app is named Sumit, with a new cat logo and app icon on desktop and mobile. The name is one setting (`APP_NAME`), and a rename keeps the agents, chats and sign-in.
+- Agents are cat and panda mascots in the Duolingo manner. The avatar's shape picks the animal and its markings, its expression picks the face, and its colour is the fur or the backdrop. Saved avatars stay the same.
