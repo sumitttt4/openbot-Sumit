@@ -1484,6 +1484,25 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         return agent;
       },
       relay: (agent) => this.#liveVoiceRelay(agent),
+      // Spoken new work gets its own agent, named after the work, with the request as its first message.
+      create: (name, task) =>
+        this.createAgent({
+          name,
+          description: task.slice(0, INPUT_LIMITS.agentDescription),
+          avatarSeed: `voice:${randomUUID()}`,
+          avatarHue: null,
+          initialMessage: task,
+        }).pipe(
+          Effect.mapError((failure) => ({ cause: failure.cause })),
+          // The app made no request for this agent, so it learns of it here.
+          Effect.tap(() => Effect.sync(() => this.#emit({ type: "agents-changed", agents: this.listAgents() }))),
+          Effect.flatMap((agent) => {
+            const deliveryId = this.listQueue(agent.id).deliveries[0]?.id;
+            return deliveryId
+              ? Effect.succeed({ agentId: agent.id, name: agent.name, deliveryId })
+              : Effect.fail({ cause: new Error(sourceText("error.voice.live.disconnected")) });
+          }),
+        ),
       send: (agentId, text) =>
         this.sendMessage({ agentId, text }).pipe(
           Effect.flatMap((receipt) => {

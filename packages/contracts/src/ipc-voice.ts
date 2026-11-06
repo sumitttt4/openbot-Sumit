@@ -411,7 +411,8 @@ export const DEFAULT_SPEECH_SETTINGS: SpeechSettings = {
   readReplies: false,
   voice: "F1",
   speed: 1,
-  codexLive: false,
+  // On by default in Sumit: the voice button talks live, and spoken new work makes its own agent.
+  codexLive: true,
   codexLiveVoice: null,
 };
 

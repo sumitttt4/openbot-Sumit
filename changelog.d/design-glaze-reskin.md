@@ -10,3 +10,4 @@
 - Icons move, as in the Glaze animated icons: an icon plays a short animation when you point at its button and when its page opens. The animation is off when the system asks for reduced motion.
 - The app is named Sumit, with a new cat logo and app icon on desktop and mobile. The name is one setting (`APP_NAME`), and a rename keeps the agents, chats and sign-in.
 - Agents are cat and panda mascots in the Duolingo manner. The avatar's shape picks the animal and its markings, its expression picks the face, and its colour is the fur or the backdrop. Saved avatars stay the same.
+- Talk to make agents: in live voice, a request for new work makes a new agent, named after the work, that starts on it at once and speaks its result. Follow-ups go to that agent. Live voice is on by default.

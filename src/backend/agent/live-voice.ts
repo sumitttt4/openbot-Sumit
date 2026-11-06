@@ -31,14 +31,20 @@ import {
 const ANSWER_TIMEOUT_MS = 20_000;
 /** How Codex reports that OpenAI refused the call: `unexpected status 401 Unauthorized: …`. */
 const UNAUTHORIZED = /\bstatus 401\b|\b401 Unauthorized\b/;
-/** The one tool of the relay thread. Codex calls it for each request that the voice model hands off. */
+/** The tools of the relay thread. Codex calls one for each request that the voice model hands off. */
 const ASK_TOOL = "ask_agent";
+/** Starts new work: a new agent, named after the work, gets the request as its first message. */
+const CREATE_TOOL = "create_agent";
 const RELAY_INSTRUCTIONS =
-  "You relay requests. For every user request, call ask_agent exactly once with the request verbatim. " +
+  "You relay requests. When a request starts a new piece of work (a new task, project, trip, report, " +
+  "search or anything that is not about the work in progress), call create_agent once with a short " +
+  "name for the work (two to four words, Title Case) and the request verbatim as the task. For a " +
+  "question or a follow-up about the work in progress, call ask_agent once with the request verbatim. " +
   "Then reply with the tool result verbatim and nothing else. Never answer on your own.";
 /** The first message in the voice conversation. The voice model reads it as the user's. */
 const RELAY_VOICE_RULE =
-  "From now on, give every request of mine to the background agent, even simple questions and small talk. " +
+  "From now on, give every request of mine to the background agents, even simple questions and small talk. " +
+  "A request for new work makes a new agent for it; a follow-up goes to the agent of the work in progress. " +
   "Never answer from your own knowledge. Wait for the agent's result before you give an answer. " +
   "Do not reply to this message.";
 
@@ -65,8 +71,17 @@ export interface LiveVoiceReply {
   readonly text: string;
 }
 
+/** A new agent that the voice made for new work, and the delivery of its first message. */
+export interface LiveVoiceCreated {
+  readonly agentId: string;
+  readonly name: string;
+  readonly deliveryId: string;
+}
+
 export interface LiveVoiceHooks {
   agent(agentId: string): AgentSummary;
+  /** Makes an agent with this name and sends it the task as its first message. */
+  create(name: string, task: string): Effect.Effect<LiveVoiceCreated, { readonly cause: unknown }>;
   /** A new Codex process that is not started yet. It runs no agent: it only connects the voice. */
   relay(agent: AgentSummary): Effect.Effect<LiveVoiceRelay, { readonly cause: unknown }>;
   /** Sends a spoken request to the agent as the user's message, and gives its delivery id. */
@@ -79,7 +94,8 @@ export interface LiveVoiceHooks {
 
 interface LiveSession {
   readonly id: string;
-  readonly agentId: string;
+  /** The agent that follow-ups go to: the open agent, then the newest agent that the voice made. */
+  agentId: string;
   readonly client: AgentClient;
   readonly cwd: string;
   threadId: string | null;
@@ -92,6 +108,9 @@ interface LiveSession {
 /** A request that the voice gave to the agent, while the agent works on it. */
 interface PendingAsk {
   readonly session: LiveSession;
+  readonly agentId: string;
+  /** A spoken prefix for the answer, such as the name of a new agent. */
+  readonly preface: string;
   readonly requestId: AppServerRequest["id"];
   readonly deliveryId: string;
 }
@@ -164,6 +183,20 @@ export class LiveVoice {
             sandbox: "read-only",
             approvalPolicy: "never",
             dynamicTools: [
+              {
+                name: CREATE_TOOL,
+                description:
+                  "Start new work: make a new agent named after the work, give it the task, and return its answer.",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string", description: "A short name for the work, two to four words." },
+                    task: { type: "string", description: "The user's request, verbatim." },
+                  },
+                  required: ["name", "task"],
+                  additionalProperties: false,
+                },
+              },
               {
                 name: ASK_TOOL,
                 description: "Pass the user's spoken request to the agent and return its answer.",
@@ -270,33 +303,60 @@ export class LiveVoice {
     }
   }
 
-  /** The relay thread has no approvals and one tool, so the only request it can make is `ask_agent`. */
+  /**
+   * The relay thread has no approvals and two tools, so the only requests it can make are `ask_agent`
+   * and `create_agent`.
+   */
   #request(session: LiveSession, request: AppServerRequest): void {
     const params = request.params;
+    const tool = getString(params, "tool");
     if (
       request.method !== "item/tool/call" ||
       getString(params, "threadId") !== session.threadId ||
-      getString(params, "tool") !== ASK_TOOL
+      (tool !== ASK_TOOL && tool !== CREATE_TOOL)
     ) {
-      session.client.respondError(request.id, { code: -32601, message: "Live voice answers only ask_agent." });
+      session.client.respondError(request.id, {
+        code: -32601,
+        message: "Live voice answers only ask_agent and create_agent.",
+      });
       return;
     }
-    const text = getString(getRecord(params, "arguments"), "request")?.trim();
+    const args = getRecord(params, "arguments");
+    const text = getString(args, tool === CREATE_TOOL ? "task" : "request")?.trim();
     if (!text) {
       session.client.respond(request.id, toolResult({ success: false, text: "The request is empty." }));
       return;
     }
+    const delivered: Effect.Effect<
+      { agentId: string; deliveryId: string; preface: string },
+      { readonly cause: unknown }
+    > =
+      tool === CREATE_TOOL
+        ? this.#hooks.create(agentName(getString(args, "name"), text), text).pipe(
+            Effect.map((created) => {
+              // Follow-ups now go to the new agent.
+              session.agentId = created.agentId;
+              return {
+                agentId: created.agentId,
+                deliveryId: created.deliveryId,
+                preface: `I made the agent ${created.name} for this. `,
+              };
+            }),
+          )
+        : this.#hooks
+            .send(session.agentId, text)
+            .pipe(Effect.map((deliveryId) => ({ agentId: session.agentId, deliveryId, preface: "" })));
     Effect.runFork(
-      this.#hooks.send(session.agentId, text).pipe(
+      delivered.pipe(
         Effect.match({
           onFailure: (failure) =>
             this.#respond(session, request.id, {
               success: false,
               text: failure.cause instanceof Error ? failure.cause.message : String(failure.cause),
             }),
-          onSuccess: (deliveryId) => {
+          onSuccess: ({ agentId, deliveryId, preface }) => {
             if (request.signal?.aborted || !this.#sessions.has(session.id)) return;
-            const ask: PendingAsk = { session, requestId: request.id, deliveryId };
+            const ask: PendingAsk = { session, requestId: request.id, agentId, deliveryId, preface };
             this.#asks.add(ask);
             // Codex stops waiting when the relay turn ends. The agent still answers in the chat.
             request.signal?.addEventListener("abort", () => this.#asks.delete(ask), { once: true });
@@ -309,10 +369,10 @@ export class LiveVoice {
 
   #answerSettled(): void {
     for (const ask of [...this.#asks]) {
-      const reply = this.#hooks.reply(ask.session.agentId, ask.deliveryId);
+      const reply = this.#hooks.reply(ask.agentId, ask.deliveryId);
       if (!reply) continue;
       this.#asks.delete(ask);
-      this.#respond(ask.session, ask.requestId, reply);
+      this.#respond(ask.session, ask.requestId, { ...reply, text: ask.preface + reply.text });
     }
   }
 
@@ -362,6 +422,12 @@ export class LiveVoice {
     closing.addObserver(() => this.#closing.delete(closing));
     if (announce) this.#hooks.emit({ type: "ended", sessionId: session.id, error });
   }
+}
+
+/** The name of a new agent: the one the voice model chose, or the first words of the task. */
+function agentName(chosen: string | null, task: string): string {
+  const name = (chosen ?? "").replace(/\s+/g, " ").trim() || task.split(/\s+/).slice(0, 4).join(" ");
+  return name.slice(0, 60);
 }
 
 function toolResult(reply: LiveVoiceReply): DynamicToolResult {
