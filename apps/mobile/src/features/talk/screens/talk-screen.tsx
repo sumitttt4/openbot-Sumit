@@ -17,9 +17,11 @@ import { Mic, X } from "@/shared/icons";
 import { haptics } from "@/shared/lib/haptics";
 import { useText } from "@/shared/lib/text";
 
-type TalkStep = "idle" | "listening" | "creating" | "failed";
+type TalkStep = "idle" | "listening" | "naming" | "creating" | "failed";
 
 const ORB_SIZE = 168;
+/** How long the server's AI has to name the agent before the first words name it. */
+const NAMING_TIMEOUT_MS = 15_000;
 
 /**
  * Talk: say a task, and a new agent named after it starts on it. The words go to a new agent as its
@@ -33,6 +35,7 @@ export function TalkScreen() {
   const [step, setStep] = useState<TalkStep>("idle");
   const [heard, setHeard] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [agentName, setAgentName] = useState("");
   const heardRef = useRef("");
   const pauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dictation = useVoiceDictation({
@@ -69,15 +72,20 @@ export function TalkScreen() {
       setStep("idle");
       return;
     }
-    const name = talkAgentName(task);
+    // The server's AI names the agent and picks its look and description, as the new-agent form on
+    // the computer does. A server without it, or a slow answer, falls back to the first words.
+    setStep("naming");
+    const profile = await withTimeout(workspace().generateAgentProfile(task), NAMING_TIMEOUT_MS).catch(() => null);
+    const name = profile?.name.trim() || talkAgentName(task);
+    setAgentName(name);
     setStep("creating");
     try {
       const agentId = await workspace().createAgent({
         name,
-        description: task,
+        description: profile?.description.trim() || task,
         initialMessage: task,
-        avatarSeed: `talk:${Crypto.randomUUID().replaceAll("-", "")}`,
-        avatarHue: null,
+        avatarSeed: profile?.avatarSeed ?? `talk:${Crypto.randomUUID().replaceAll("-", "")}`,
+        avatarHue: profile?.avatarHue ?? null,
       });
       void haptics.notification("success");
       handOffTalk({ agentId, text: task });
@@ -107,9 +115,11 @@ export function TalkScreen() {
   const status =
     step === "listening"
       ? t("mobile.chat.talk.listening")
-      : step === "creating"
-        ? t("mobile.chat.talk.creating", { name: talkAgentName(heard) })
-        : t("mobile.chat.talk.tapToSpeak");
+      : step === "naming"
+        ? t("mobile.chat.talk.naming")
+        : step === "creating"
+          ? t("mobile.chat.talk.creating", { name: agentName })
+          : t("mobile.chat.talk.tapToSpeak");
 
   return (
     <View className="flex-1 items-center justify-between bg-background px-6 pb-safe-offset-6 pt-safe-offset-4">
@@ -137,7 +147,7 @@ export function TalkScreen() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={step === "listening" ? t("mobile.chat.talk.listening") : t("mobile.chat.talk.tapToSpeak")}
-        disabled={step === "creating"}
+        disabled={step === "naming" || step === "creating"}
         onPress={() => (step === "listening" ? void finish() : listen())}
       >
         <Animated.View
@@ -165,4 +175,21 @@ export function TalkScreen() {
       </View>
     </View>
   );
+}
+
+/** The promise, or a failure after `ms`. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timed out")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (cause) => {
+        clearTimeout(timer);
+        reject(cause);
+      },
+    );
+  });
 }

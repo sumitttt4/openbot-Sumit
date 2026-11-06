@@ -26,6 +26,7 @@ import type {
   AgentNewChatSettings,
   AgentNotificationLevelsSnapshot,
   AgentPlanCardSettings,
+  AgentProfileDraft,
   AgentProviderId,
   AgentReasoningEffort,
   AgentSessionSettings,
@@ -665,6 +666,11 @@ export interface MobileWorkspaceContextValue {
   addRemoteServer: (input: AddRemoteServerInput) => Promise<string>;
   /** Creates an agent on the active server and returns its id. */
   createAgent: (input: CreateAgentInput) => Promise<string>;
+  /**
+   * Asks the active server's AI for an agent profile (name, title, description) that fits the words.
+   * It fails on a server without profile generation.
+   */
+  generateAgentProfile: (prompt: string) => Promise<AgentProfileDraft>;
   /**
    * Changes an agent. A host with `agent-colors-v1` gets `avatarColor` through its colour route, and
    * sets the hue itself. An older host gets only `avatarHue`, the nearest hue of the colour.

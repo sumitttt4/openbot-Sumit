@@ -3,6 +3,7 @@ import {
   type AvatarColor,
   type CreateAgentInput,
   canAdministerServer,
+  decodeAgentProfileDraft,
   isQueuedMessageReceipt,
   MCP_SERVERS_CAPABILITY,
   type RespondToApprovalInput,
@@ -1935,6 +1936,8 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         }
         return created.id;
       },
+      generateAgentProfile: (prompt: string) =>
+        request("POST", TEAM_API_ROUTES.agents.generateProfile, decodeAgentProfileDraft, { prompt }),
       updateAgent: async (input: UpdateAgentInput, serverId = activeServerIdRef.current ?? undefined) => {
         if (!serverId || !agentsRef.current.some((agent) => agent.id === input.agentId && agent.serverId === serverId))
           throw new Error(currentText().t("mobile.workspace.error.agentUnavailableOnHost"));

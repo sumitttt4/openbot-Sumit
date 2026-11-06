@@ -142,7 +142,7 @@ import type { QueueEditRequest } from "@openbot/contracts/team-protocol/queue-ed
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger } from "@openbot/logging";
 import { classifyFailure } from "@openbot/telemetry";
-import { Cause, Deferred, Effect, Exit, Fiber, Result, Schema, Scope, Semaphore } from "effect";
+import { Cause, Deferred, Effect, Exit, Fiber, Option, Result, Schema, Scope, Semaphore } from "effect";
 import { AgentMemories } from "./agent/agent-memories";
 import { AgentRemoval, AgentRemovalFailed } from "./agent/agent-removal";
 import { AgentSettingsRefused } from "./agent/agent-settings-refused";
@@ -445,6 +445,9 @@ export type AgentUpdate = UpdateAgentInput & {
   /** Only the local `agentFolders` handler sets it, like `additionalFolders`. */
   excludedFolders?: string[];
 };
+
+/** How long the profile AI has to name an agent that live voice makes. */
+const VOICE_PROFILE_TIMEOUT_MS = 15_000;
 
 export class AgentService extends EventEmitter<AgentServiceEvents> {
   readonly channels: ChannelService;
@@ -1486,23 +1489,34 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       relay: (agent) => this.#liveVoiceRelay(agent),
       // Spoken new work gets its own agent, named after the work, with the request as its first message.
       create: (name, task) =>
-        this.createAgent({
-          name,
-          description: task.slice(0, INPUT_LIMITS.agentDescription),
-          avatarSeed: `voice:${randomUUID()}`,
-          avatarHue: null,
-          initialMessage: task,
-        }).pipe(
-          Effect.mapError((failure) => ({ cause: failure.cause })),
-          // The app made no request for this agent, so it learns of it here.
-          Effect.tap(() => Effect.sync(() => this.#emit({ type: "agents-changed", agents: this.listAgents() }))),
-          Effect.flatMap((agent) => {
-            const deliveryId = this.listQueue(agent.id).deliveries[0]?.id;
-            return deliveryId
-              ? Effect.succeed({ agentId: agent.id, name: agent.name, deliveryId })
-              : Effect.fail({ cause: new Error(sourceText("error.voice.live.disconnected")) });
-          }),
-        ),
+        // The profile AI names the agent and picks its description and look, as the new-agent form
+        // does. A busy or slow profile step falls back to the name that the voice model chose.
+        this.generateProfile({ prompt: task }, [])
+          .pipe(
+            Effect.timeout(VOICE_PROFILE_TIMEOUT_MS),
+            Effect.option,
+            Effect.flatMap((profile) => {
+              const draft = Option.getOrNull(profile);
+              return this.createAgent({
+                name: draft?.name.trim() || name,
+                description: (draft?.description.trim() || task).slice(0, INPUT_LIMITS.agentDescription),
+                avatarSeed: draft?.avatarSeed ?? `voice:${randomUUID()}`,
+                avatarHue: draft?.avatarHue ?? null,
+                initialMessage: task,
+              });
+            }),
+          )
+          .pipe(
+            Effect.mapError((failure) => ({ cause: failure.cause })),
+            // The app made no request for this agent, so it learns of it here.
+            Effect.tap(() => Effect.sync(() => this.#emit({ type: "agents-changed", agents: this.listAgents() }))),
+            Effect.flatMap((agent) => {
+              const deliveryId = this.listQueue(agent.id).deliveries[0]?.id;
+              return deliveryId
+                ? Effect.succeed({ agentId: agent.id, name: agent.name, deliveryId })
+                : Effect.fail({ cause: new Error(sourceText("error.voice.live.disconnected")) });
+            }),
+          ),
       send: (agentId, text) =>
         this.sendMessage({ agentId, text }).pipe(
           Effect.flatMap((receipt) => {

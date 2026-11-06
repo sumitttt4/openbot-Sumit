@@ -178,6 +178,7 @@ export const messages = defineMessages("mobile.chat", {
     "Say a task, like “Plan a weekend in Goa”. I will make an agent for it and tell you the answer.",
   "mobile.chat.talk.listening": "Listening…",
   "mobile.chat.talk.tapToSpeak": "Tap to speak",
+  "mobile.chat.talk.naming": "Thinking of a name…",
   "mobile.chat.talk.creating": "Making the agent “{name}”…",
   "mobile.chat.talk.failed": "The agent was not made. Try again.",
   "mobile.chat.talk.noServer": "Connect to your server first.",
