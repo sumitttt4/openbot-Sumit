@@ -93,7 +93,7 @@ import { useAppLoadingOverlay, useScreenLoadingLabel } from "@/shared/components
 import { ChromeGlassSheen } from "@/shared/components/chrome-glass-sheen";
 import { LargeTitle, LargeTitleBar, useLargeTitleScroll } from "@/shared/components/large-title";
 import { type MenuAction, MenuView } from "@/shared/components/menu-view";
-import { Ellipsis, EllipsisVertical, Layers as Layers3, MessagesSquare, PanelLeft, WifiOff } from "@/shared/icons";
+import { Ellipsis, EllipsisVertical, Layers as Layers3, MessagesSquare, Mic, PanelLeft, WifiOff } from "@/shared/icons";
 import { useChromeGlass } from "@/shared/lib/chrome-glass";
 import { haptics } from "@/shared/lib/haptics";
 import { BAR_BUTTON_SIZE, NATIVE_BAR_HEIGHT, useBarTop } from "@/shared/lib/native-bar";
@@ -1150,10 +1150,44 @@ export function ConnectedScreen({ variant = "screen" }: { variant?: "screen" | "
           </Stack.Toolbar>
         </>
       ) : null}
+
+      {/* Talk: say a task, and an agent named after it starts on it. */}
+      {headerActions && !search.open && hasSelectedServer ? (
+        <View
+          className="absolute items-center"
+          pointerEvents="box-none"
+          style={{ left: 0, right: 0, bottom: insets.bottom + 20 }}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("mobile.chat.talk.open")}
+            className="flex-row items-center gap-2 rounded-full bg-accent px-6 py-3.5"
+            style={TALK_SHADOW}
+            onPress={() => {
+              void haptics.impact("light");
+              router.push("/talk");
+            }}
+          >
+            <Mic size={20} color="#ffffff" />
+            <Typography.Paragraph className="font-semibold text-white">
+              {t("mobile.chat.talk.open")}
+            </Typography.Paragraph>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
   return pane ? <SplitPaneLayers list={listTree} rail={railTree} /> : listTree;
 }
+
+/** The lift of the floating Talk button above the list. */
+const TALK_SHADOW = {
+  shadowColor: "#000000",
+  shadowOpacity: 0.2,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 6,
+} as const;
 
 /** The detail column of a wide window before a chat opens: the list is in the pane beside it. */
 function NoChatOpen() {

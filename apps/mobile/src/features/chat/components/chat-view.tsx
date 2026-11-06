@@ -42,6 +42,7 @@ import {
   presentChatMessages,
 } from "@/features/chat/model/chat-messages";
 import { finishedTurnSummaries, type TurnStepsSummary } from "@/features/chat/model/turn-thinking";
+import { takeTalkHandoff, talkHandoffWaits } from "@/features/talk/model/talk-handoff";
 import { replyVoiceReady } from "@/features/voice/model/reply-voice";
 import { ConnectionStatus } from "@/features/workspace/components/connection-status";
 import { useTurnStepLines } from "@/features/workspace/components/use-agent-activity";
@@ -653,6 +654,18 @@ export function ChatView({
     outboxMessages,
     send: (text) => (writable ? deliver(text, null, []) : null),
   });
+  // An agent that the Talk screen made: the voice conversation opens at once and reads the answer to
+  // the words that made it, then listens for the next request.
+  const talkAgentId = target.kind === "agent" ? target.id : null;
+  const talkMessage =
+    talkAgentId && talkHandoffWaits(talkAgentId)
+      ? conversation?.messages.findLast((message) => message.author === "user")
+      : undefined;
+  useEffect(() => {
+    if (!talkAgentId || !talkMessage || !live.available || live.open || !serverOnline) return;
+    const text = takeTalkHandoff(talkAgentId);
+    if (text !== null) live.start({ messageId: talkMessage.id, text });
+  }, [talkAgentId, talkMessage, live, serverOnline]);
   // The agent who speaks in a voice conversation: the agent of the chat, or the channel's leader, who
   // gives out the channel's tasks.
   const voiceAgent =

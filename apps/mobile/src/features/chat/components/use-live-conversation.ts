@@ -107,7 +107,11 @@ export interface LiveConversation extends LiveConversationState {
   level: SharedValue<number>;
   /** 0 with the chat, 1 with the conversation. */
   presence: SharedValue<number>;
-  start: () => void;
+  /**
+   * Opens the conversation. With `follow`, it first waits for the answer to that message, already in
+   * the chat, and reads it, as for words it sent: the Talk screen gives a new agent's first message.
+   */
+  start: (follow?: { messageId: string; text: string }) => void;
   toggleMute: () => void;
   /** Stops the reply, or the wait for it, and listens again. The agent's turn goes on. */
   interrupt: () => void;
@@ -521,7 +525,7 @@ function createController({
     followReply,
     recognizerPhase,
     connection,
-    start(): void {
+    start(follow?: { messageId: string; text: string }): void {
       const { conversation, channel, enabled, online } = input();
       if (open || !speechNative || (!conversation && !channel) || !enabled) return;
       open = true;
@@ -539,7 +543,13 @@ function createController({
       // The composer turns into the call bar on this progress.
       presence.set(withTiming(1, { duration: OPEN_MS, easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
       // Started while the server is away, it waits for the server as it would after a disconnect.
-      if (online) listen();
+      if (online && follow && conversation) {
+        turns += 1;
+        pending = { clientMessageId: "", messageId: follow.messageId, turnId: null, endedAt: null, channel: null };
+        setPhase("thinking");
+        update({ caption: follow.text, error: null });
+        followReply();
+      } else if (online) listen();
       else {
         phase = "listening";
         connection(false);

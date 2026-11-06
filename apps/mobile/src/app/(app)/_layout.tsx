@@ -195,6 +195,7 @@ function AuthenticatedStack() {
         })}
       >
         <Stack.Screen name="connected" options={{ animation: "fade", gestureEnabled: false, title: "" }} />
+        <Stack.Screen name="talk" options={{ presentation: "fullScreenModal", headerShown: false, title: "" }} />
         <Stack.Screen
           name="chat/[agentId]"
           options={{
