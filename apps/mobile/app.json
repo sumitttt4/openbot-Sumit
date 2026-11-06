@@ -41,6 +41,7 @@
     "plugins": [
       "./plugins/with-rocketsim",
       "./plugins/with-workspace-bundle-inputs",
+      "./plugins/with-gradle-memory",
       "expo-router",
       "expo-video",
       [
