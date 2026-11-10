@@ -1,0 +1,86 @@
+name: Build Android APK
+
+# An APK of the mobile app that a phone or tablet installs from a download, with no Expo account.
+# The free EAS machine runs out of memory on this app, so the build runs here, as the release
+# workflow does: a GitHub runner with more memory, Gradle memory settings and a swap file.
+# Run it from the Actions tab (Run workflow). The APK is the "sumit-android-apk" artifact of the run.
+#
+# It is a preview build (app.config.js, EAS_BUILD_PROFILE=preview): no R8 minify, no resource
+# shrinking and no release lint, for 64-bit ARM, which every current Android phone and tablet runs.
+# The Expo template signs a release build with its debug key, so Android installs it directly. Uninstall
+# a store build of the app first: the two have different keys.
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: build-android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    name: Build the APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    env:
+      CI: "1"
+      EAS_BUILD_PROFILE: preview
+      EXPO_PUBLIC_APP_ENV: preview
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Free runner disk
+        shell: bash
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+        with:
+          install: none
+
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # The values of the release workflow. The Gradle user home file comes before the project file.
+      - name: Give Gradle more memory
+        shell: bash
+        run: |
+          mkdir -p ~/.gradle
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.workers.max=2' >> ~/.gradle/gradle.properties
+          sudo fallocate -l 8G /swapfile-build
+          sudo chmod 600 /swapfile-build
+          sudo mkswap /swapfile-build
+          sudo swapon /swapfile-build
+          free -h
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate the Android project
+        working-directory: apps/mobile
+        run: bunx expo prebuild --platform android --no-install --clean
+
+      - name: Build the APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+
+      - name: Save the APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sumit-android-apk
+          path: apps/mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
